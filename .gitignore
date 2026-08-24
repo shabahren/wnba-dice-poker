@@ -1,0 +1,4 @@
+.changed
+__pycache__/
+*.py[cod]
+wnba-dice-poker.zip
