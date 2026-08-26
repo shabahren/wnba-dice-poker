@@ -1,4 +1,6 @@
 .changed
+.realtime-runner.lock
 __pycache__/
 *.py[cod]
+logs/
 wnba-dice-poker.zip

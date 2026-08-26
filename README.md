@@ -1,8 +1,8 @@
 # WNBA Dice Poker
 
-Very small reproducible experiment:
+Very small reproducible experiment running on an always-on Windows PC:
 
-- GitHub Actions wakes up every **5 minutes**.
+- A persistent local runner wakes up just after every **5-minute UTC boundary**.
 - If a configured WNBA game is inside its **150-minute window**, it fetches the latest public randomness from **drand**.
 - The same public beacon value is combined with:
   - game ID
@@ -10,7 +10,36 @@ Very small reproducible experiment:
   - team name
 - Five fair d6 values are deterministically derived for each team.
 - The hands are ranked as Dice Poker.
-- A CSV row is appended and committed to GitHub.
+- A CSV row is appended, committed, and pushed to GitHub immediately.
+
+## Windows real-time runner
+
+Install the automatic logon task once from PowerShell:
+
+~~~powershell
+.\install_windows_task.ps1
+Start-ScheduledTask -TaskName "WNBA Dice Poker Real-Time"
+~~~
+
+The PC must remain powered on, awake, connected to the internet, and signed in.
+The runner executes five seconds after each UTC five-minute boundary and retries
+temporary drand failures. Logs are written to logs/realtime.log.
+
+Check the task and recent log entries with:
+
+~~~powershell
+Get-ScheduledTask -TaskName "WNBA Dice Poker Real-Time"
+Get-Content .\logs\realtime.log -Tail 30
+~~~
+
+Remove it with:
+
+~~~powershell
+.\uninstall_windows_task.ps1
+~~~
+
+The GitHub workflow is manual-only and should not be launched while the local
+runner is active.
 
 ## Dice Poker ranking
 
@@ -65,7 +94,8 @@ The script automatically considers the game active from `start_utc` until 150 mi
 
 ## Important timing note
 
-GitHub scheduled Actions are not guaranteed to start at the exact second/minute; runs can occasionally be delayed. The CSV therefore records both:
+Windows wakes the local process at each boundary, but operating-system load and
+network latency can still add a few seconds. The CSV therefore records both:
 
 - the 5-minute `slot_utc`
 - the actual `generated_utc`
