@@ -1,8 +1,9 @@
 # WNBA Dice Poker
 
-Very small reproducible experiment running on an always-on Windows PC:
+Very small reproducible experiment scheduled on an always-on Windows PC:
 
-- A persistent local runner wakes up just after every **5-minute UTC boundary**.
+- Windows launches a short process just after each **5-minute boundary**, but
+  only during configured match windows.
 - If a configured WNBA game is inside its **150-minute window**, it fetches the latest public randomness from **drand**.
 - The same public beacon value is combined with:
   - game ID
@@ -14,21 +15,28 @@ Very small reproducible experiment running on an always-on Windows PC:
 
 ## Windows real-time runner
 
-Install the automatic logon task once from PowerShell:
+Install the match-window task once from PowerShell:
 
 ~~~powershell
 .\install_windows_task.ps1
-Start-ScheduledTask -TaskName "WNBA Dice Poker Real-Time"
 ~~~
 
+The installer reads games.json and creates one repeating trigger for each future
+or active 150-minute match window. Rerun the installer whenever games are added
+or their times change.
+
 The PC must remain powered on, awake, connected to the internet, and signed in.
-The runner executes five seconds after each UTC five-minute boundary and retries
-temporary drand failures. Logs are written to logs/realtime.log.
+Each process starts five seconds after its UTC five-minute boundary, retries
+temporary drand failures, and then exits. No Python process remains running
+between scheduled checks or outside match windows. Logs are written to
+logs/realtime.log.
 
 Check the task and recent log entries with:
 
 ~~~powershell
 Get-ScheduledTask -TaskName "WNBA Dice Poker Real-Time"
+Get-ScheduledTask -TaskName "WNBA Dice Poker Real-Time" |
+    Select-Object -ExpandProperty Triggers
 Get-Content .\logs\realtime.log -Tail 30
 ~~~
 

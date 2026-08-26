@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-import argparse
 import logging
 import msvcrt
 import subprocess
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
@@ -14,8 +13,6 @@ LOG_DIR = ROOT / "logs"
 LOG_FILE = LOG_DIR / "realtime.log"
 LOCK_FILE = ROOT / ".realtime-runner.lock"
 CHANGED_FILE = ROOT / ".changed"
-INTERVAL_MINUTES = 5
-BOUNDARY_DELAY_SECONDS = 5
 RETRY_SECONDS = 15
 MAX_GENERATION_ATTEMPTS = 4
 
@@ -71,15 +68,6 @@ def run(command, check=True):
             f"Command failed ({completed.returncode}): {' '.join(map(str, command))}"
         )
     return completed
-
-
-def next_boundary(now=None):
-    now = now or datetime.now(timezone.utc)
-    minute = now.minute - (now.minute % INTERVAL_MINUTES)
-    boundary = now.replace(minute=minute, second=BOUNDARY_DELAY_SECONDS, microsecond=0)
-    if boundary <= now:
-        boundary += timedelta(minutes=INTERVAL_MINUTES)
-    return boundary
 
 
 def generate_current_slot():
@@ -143,14 +131,6 @@ def run_cycle():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run WNBA Dice Poker in real time.")
-    parser.add_argument(
-        "--once",
-        action="store_true",
-        help="Run one collection cycle and exit.",
-    )
-    args = parser.parse_args()
-
     configure_logging()
     try:
         lock_handle = acquire_lock()
@@ -159,20 +139,13 @@ def main():
         return 1
 
     with lock_handle:
-        logging.info("Real-time runner started with Python %s.", sys.version.split()[0])
-        if args.once:
+        logging.info("Scheduled collection started with Python %s.", sys.version.split()[0])
+        try:
             run_cycle()
-            return 0
-
-        while True:
-            wake_at = next_boundary()
-            wait_seconds = max(0, (wake_at - datetime.now(timezone.utc)).total_seconds())
-            logging.info("Next collection cycle: %s", wake_at.isoformat())
-            time.sleep(wait_seconds)
-            try:
-                run_cycle()
-            except Exception:
-                logging.exception("Unexpected cycle failure; runner will continue.")
+        except Exception:
+            logging.exception("Collection cycle failed.")
+            return 1
+    return 0
 
 
 if __name__ == "__main__":
