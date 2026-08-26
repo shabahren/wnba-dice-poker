@@ -64,7 +64,8 @@ def run(command, check=True):
     if completed.stdout.strip():
         logging.info(completed.stdout.strip())
     if completed.stderr.strip():
-        logging.warning(completed.stderr.strip())
+        log = logging.info if completed.returncode == 0 else logging.warning
+        log(completed.stderr.strip())
     if check and completed.returncode != 0:
         raise RuntimeError(
             f"Command failed ({completed.returncode}): {' '.join(map(str, command))}"
@@ -98,6 +99,13 @@ def generate_current_slot():
 
 
 def push_pending_commits():
+    ahead = run(
+        ["git", "rev-list", "--count", "@{upstream}..HEAD"],
+        check=False,
+    )
+    if ahead.returncode != 0 or ahead.stdout.strip() == "0":
+        return
+
     result = run(["git", "push", "origin", "main"], check=False)
     if result.returncode != 0:
         logging.error("Git push failed. The local commit is preserved for the next retry.")
