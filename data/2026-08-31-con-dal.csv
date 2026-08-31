@@ -1,3 +1,4 @@
 slot_utc,generated_utc,game_id,team_a,team_a_dice,team_a_hand,team_b,team_b_dice,team_b_hand,winner,drand_round,drand_randomness
 2026-08-31T00:00:00Z,2026-08-31T00:00:05.408064Z,2026-08-31-con-dal,Connecticut Sun,1-5-4-5-1,Two pair,Dallas Wings,5-5-3-4-2,One pair,Connecticut Sun,6423446,a5227239f2d6b8b4306688704e34a6b3b69b1668b9d1aa69128d1f443492615a
 2026-08-31T00:05:00Z,2026-08-31T00:05:05.406245Z,2026-08-31-con-dal,Connecticut Sun,4-6-3-6-5,One pair,Dallas Wings,2-2-5-4-1,One pair,Connecticut Sun,6423456,228d77b7a56b51e914a4444ab51b22a15c62babdb3f29a0ef24edd08c009d2fd
+2026-08-31T00:10:00Z,2026-08-31T00:10:05.420422Z,2026-08-31-con-dal,Connecticut Sun,4-2-5-4-2,Two pair,Dallas Wings,5-3-6-1-4,High dice,Connecticut Sun,6423466,97ddf2131402594f0ab269919df41d7ac1fbea78a51fe80c550f359549a34306
